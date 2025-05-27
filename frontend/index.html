@@ -122,7 +122,7 @@
     const GRID_SIZE = 15; 
     const CELL_SIZE_PX = 32; // Increased for better visibility
     const gameBoard = document.getElementById('game-board');
-
+    
     let player1 = { x: 1, y: 1, id: 'player1', element: null, char: 'H' }; // Hunter
     let player2 = { x: GRID_SIZE, y: GRID_SIZE, id: 'player2', element: null, char: 'R' }; // Runner
     let gameOver = false;
@@ -149,6 +149,17 @@
         player2.element.style.top = `${(player2.y - 1) * CELL_SIZE_PX + playerOffset}px`;
         player2.element.style.width = `${CELL_SIZE_PX * 0.75}px`;
         player2.element.style.height = `${CELL_SIZE_PX * 0.75}px`;
+    }
+
+    function updategame() {
+        drawPlayers();
+        if (player1.x === player2.x && player1.y === player2.y) {
+            gameOver = true;
+            player1.element.style.backgroundColor = '#f1c40f'; // Gold for winner
+            player1.element.style.borderColor = '#f39c12';
+            player1.element.style.zIndex = '10';
+            player2.element.style.opacity = '0.5'; // Fade out runner
+        }
     }
 
     function handleKeyDown(event) {
@@ -180,17 +191,17 @@
         }
 
         if (p1Moved || p2Moved) {
-            drawPlayers();
-            if (player1.x === player2.x && player1.y === player2.y) {
-            gameOver = true;
-            player1.element.style.backgroundColor = '#f1c40f'; // Gold for winner
-            player1.element.style.borderColor = '#f39c12';
-            player1.element.style.zIndex = '10';
-            player2.element.style.opacity = '0.5'; // Fade out runner
-            return;
-            }
+            updategame();
+            if (gameOver) return;
         }
     }
+
+    function moveplayer2(px,py) {
+        player2.x = px;
+        player2.y = py;
+        updategame();
+    }
+
 
     document.addEventListener('keydown', handleKeyDown);
 
@@ -280,10 +291,11 @@
     drawPlayers();
 
     window.addEventListener("message", (event) => {
-      if (event.data.type == RENDER) {
-        let props = event.data.args;
-        let msgLabel = document.getElementById("message_label");
-        msgLabel.innerText = `Update [${props.counter}] at ${props.datetime} `+"Received from Streamlit: " + JSON.stringify(props);}
+        if (event.data.type == RENDER) {
+            let props = event.data.args;
+            moveplayer2(Number(props.runner.x),Number(props.runner.y));
+            //msgLabel.innerText = `Update [${props.counter}] at ${props.datetime} `+"Received from Streamlit: " + JSON.stringify(props);}
+        }
     })
 
     _sendMessage(COMPONENT_READY, { apiVersion: 1 });
