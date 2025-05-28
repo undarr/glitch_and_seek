@@ -294,7 +294,6 @@
         if (event.data.type == RENDER) {
             let props = event.data.args;
             moveplayer2(Number(props.runner.x),Number(props.runner.y));
-            //msgLabel.innerText = `Update [${props.counter}] at ${props.datetime} `+"Received from Streamlit: " + JSON.stringify(props);}
         }
     })
 
@@ -304,6 +303,8 @@
         _sendMessage(SET_FRAME_HEIGHT, { height: document.documentElement.clientHeight })
       }, 0)
     })
+
+    setInterval(() => {notifyHost(Date.now()); console.log(Date.now());},50);
   }
   
   initialize()
