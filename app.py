@@ -12,7 +12,6 @@ import sys
 from frontend import fendfile
 from datetime import datetime
 import queue
-
 st.set_page_config(layout="wide")
 
 if 'codeshare' not in st.session_state:
@@ -22,22 +21,22 @@ if 'thread_queue' not in st.session_state:
     st.session_state.thread_queue = queue.Queue()
 
 def my_threaded_function(q: queue.Queue):
-    if False:
-        '''
-        options = webdriver.ChromeOptions()
-        options.add_argument("--headless")  # Optional: run headless
-        options.add_argument("--log-level=3")
-        driver = webdriver.Chrome(options=options)
-        driver.get("https://codeshare.io/ueue")
-        code_mirror_editor_div = WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.CodeMirror")))
-        initial_code = driver.execute_script("return arguments[0].CodeMirror.getValue();", code_mirror_editor_div)
-        '''
     print("Thread: Started")
-    m="45"
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")  # Optional: run headless
+    options.add_argument("--log-level=3")
+    driver = webdriver.Chrome(options=options)
+    driver.get("https://codeshare.io/ueue")
+    code_mirror_editor_div = WebDriverWait(driver, 15).until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.CodeMirror")))
+    cur = ""
+    print("Driverloaded")
     while True:
-        q.put({"status": "running", "message": m})
-        time.sleep(3) # Simulate some work
-        m=str(int(m)+1)
+        initial_code = driver.execute_script("return arguments[0].CodeMirror.getValue();", code_mirror_editor_div)
+        if (initial_code!=cur):
+            cur=initial_code
+            q.put({"status": "running", "message": cur})
+            print("Added new")
+        #time.sleep(0.1)
     q.put({"status": "progress", "message": "56"})
     time.sleep(3) # Simulate more work
     q.put({"status": "completed", "message": "67"})
@@ -50,7 +49,6 @@ if 'codeshareget' not in st.session_state:
     st.success("Thread started. Updates should appear live.")
 
 def pq():
-    print('pq')
     try:
         while not st.session_state.thread_queue.empty():
             message_from_thread = st.session_state.thread_queue.get_nowait()
@@ -60,12 +58,9 @@ def pq():
         pass # Queue is empty, nothing to process
 
 def toXY(stri):
-    return({"x": str(int(stri)//12),"y": str(int(stri)%12)})
-
-print('refreshed1')
+    return({"x": str(int(stri)//15+1),"y": str(int(stri)%15+1)})
 pq()
 props = {'runner': toXY(st.session_state.codeshare)}
-value = fendfile(**props)
+value = fendfile(**props,key="123")
 st.header('Streamlit')
 st.write('Received from component: ', value)
-print('refreshed2')
